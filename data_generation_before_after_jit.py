@@ -6,7 +6,8 @@ import random, re, os, sys, logging, json
 ''' Generate before-JIT and after-JIT dataset for evaluate HINDBR'''
 
 ########## Settings ###############
-PROJECT = 'eclipse'
+# PROJECT = 'eclipse'
+PROJECT = 'linux'
 ###################################
 
 

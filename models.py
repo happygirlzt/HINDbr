@@ -10,15 +10,18 @@ import itertools
 import datetime
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Model
-from keras.layers import Input, Embedding, Lambda, concatenate, Flatten, Dropout, Dense, Activation, Bidirectional, CuDNNLSTM, BatchNormalization
+from keras.layers import Input, Embedding, Lambda, concatenate, Flatten, Dropout, Dense, Bidirectional, CuDNNLSTM
 import keras.backend as K
-from keras.optimizers import Adadelta, adam
+from keras.optimizers import Adadelta
 
-from keras.models import load_model
 import tensorflow as tf
+# import tensorflow.compat.v1 as tf
+# tf.disable_eager_execution()
+# tf.disable_v2_behavior()
+
 import json
 from modules import text_to_word_list
-import sys, os, pickle
+import sys, os
 
 from imblearn.combine import SMOTETomek
 
@@ -26,6 +29,22 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 config = tf.ConfigProto() 
 config.gpu_options.allow_growth = True 
 sess = tf.Session(config = config)
+
+
+import logging
+ 
+# get TF logger
+log = logging.getLogger('tensorflow')
+log.setLevel(logging.DEBUG)
+ 
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ 
+# create file handler which logs even debug messages
+fh = logging.FileHandler('model.log')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+log.addHandler(fh)
 
 # Project data
 PROJECT = sys.argv[1]
@@ -71,7 +90,6 @@ stops = set(stopwords.words('english'))
 vocabulary = dict()
 inverse_vocabulary = ['<unk>']
 word2vec = KeyedVectors.load_word2vec_format(WORD_EMBEDDING_FILE, binary=True)
-
 summaries_cols = ['summary1', 'summary2']
 
 # Iterate over the summaries
@@ -81,7 +99,8 @@ for index, row in data_df.iterrows():
         s2n = []
         for word in text_to_word_list(row[summary]):
             # Check for unwanted words
-            if word in stops and word not in word2vec.vocab:
+            # if word in stops and word not in word2vec.vocab:
+            if word in stops and word not in word2vec.key_to_index.keys():
                 continue
 
             if word not in vocabulary:
@@ -101,9 +120,10 @@ word_embeddings[0] = 0
 
 # Build the word embedding matrix
 for word, index in vocabulary.items():
-    if word in word2vec.vocab:
-        word_embeddings[index] = word2vec.word_vec(word)
-
+    # if word in word2vec.vocab:
+    if word in word2vec.key_to_index.keys():
+        # word_embeddings[index] = word2vec.word_vec(word)
+        word_embeddings[index] = word2vec.get_vector(word)
 
 del word2vec
 
@@ -178,6 +198,8 @@ kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
 cvscores_TEXT = []
 cvscores_HIN = []
 cvscores_TEXT_HIN = []
+
+
 
 for train, test in kfold.split(X, Y):
     MODEL_NO = str(MODEL_NO)
@@ -275,6 +297,9 @@ for train, test in kfold.split(X, Y):
 
     ## Train the model ##
     training_start_time = time()
+
+    # sess = tf.Session(config = config)
+    # sess.run(tf.global_variables_initializer())
     model_trained = model_text.fit([X_text_train_left_res, X_text_train_right_res], Y_train_res, batch_size=batch_size, epochs=n_epoch, validation_split=0.2, shuffle=True)
     print("Training time finished.\n{} epochs in {}".format(n_epoch, datetime.timedelta(seconds=time()-training_start_time)))
 

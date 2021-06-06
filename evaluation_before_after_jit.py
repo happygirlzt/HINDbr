@@ -10,7 +10,7 @@ import itertools
 import datetime
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Model
-from keras.layers import Input, Embedding, Lambda, concatenate, Flatten, Dropout, Dense, Activation, Bidirectional, CuDNNLSTM, BatchNormalization
+from keras.layers import Input, Embedding, Lambda, concatenate, Flatten, Dropout, Dense, Bidirectional, CuDNNLSTM, BatchNormalization
 import keras.backend as K
 from keras.optimizers import Adadelta, adam
 
@@ -18,7 +18,7 @@ from keras.models import load_model
 import tensorflow as tf
 import json
 from modules import text_to_word_list
-import sys, os, pickle
+import sys, os
 
 from imblearn.combine import SMOTETomek
 

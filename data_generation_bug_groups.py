@@ -2,7 +2,6 @@ import os, re
 import logging
 import networkx as nx
 import pickle
-import sys
 import json
 
 """
@@ -13,7 +12,8 @@ identify non-duplicate bugs as master bug reports, then storing them in dictiona
 - value: duplicate bug report(s) or none if the master bug report has no duplicates
 """
 ########## Settings ###############
-PROJECT = 'openoffice'
+# PROJECT = 'openoffice'
+PROJECT = 'linux'
 ###################################
 
 
